@@ -1,0 +1,22 @@
+{
+  "name": "niacin-contracts",
+  "version": "1.2.0",
+  "description": "",
+  "directories": {
+    "lib": "lib",
+    "test": "test"
+  },
+  "files": [
+    "src/",
+    "out/"
+  ],
+  "scripts": {
+    "build": "rm -rf out/ && forge build"
+  },
+  "keywords": [],
+  "author": "liamzebedee",
+  "license": "AGPL-3.0",
+  "volta": {
+    "node": "16.19.0"
+  }
+}
