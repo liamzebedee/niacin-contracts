@@ -63,7 +63,7 @@ contract Proxy is
     ) 
         public 
         onlyAdmin
-    {   
+    {
         // Deploy the new implementation.
         address instance = Create2.deploy(
             0, 
@@ -71,15 +71,15 @@ contract Proxy is
             _newImplementation
         );
 
+        // Update the proxy.
+        _proxyStore().implementation = instance;
+        _proxyStore().version = version;
+
         // Initialize the new implementation.
         if(initialize) {
             // delegatecall into implementation.
             MixinInitializable(address(this)).initialize();
         }
-
-        // Update the proxy.
-        _proxyStore().implementation = instance;
-        _proxyStore().version = version;
 
         emit Upgraded(instance, version);
     }
