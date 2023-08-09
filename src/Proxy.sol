@@ -73,7 +73,8 @@ contract Proxy is
 
         // Initialize the new implementation.
         if(initialize) {
-            MixinInitializable(instance).initialize();
+            // delegatecall into implementation.
+            MixinInitializable(address(this)).initialize();
         }
 
         // Update the proxy.
