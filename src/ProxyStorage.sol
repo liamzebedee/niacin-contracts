@@ -2,22 +2,29 @@
 pragma solidity ^0.8.9;
 
 struct ProxyStore {
-    // Admin of the proxy.
+    /// @notice Admin of the proxy.
     address admin;
-    // The address of the current implementation.
+    /// @notice The address of the current implementation.
     address implementation;
-    // The version string associated with the implemetnation.
+    /// @notice The version string associated with the implemetnation.
     uint48 version;
 }
 
-// This store is consumed by both the proxy and by implementations.
+/// @dev This store is consumed by both the proxy and by implementations.
 struct ImplStore {
-    // An address provider which the implementation uses to resolve dependencies.
+    /// @notice An address provider which the implementation uses to resolve dependencies.
     address addressProvider;
-    // The proxy for this implementation.
+    
+    /// @notice The proxy for this implementation.
     address proxy;
-    // The address cache for the implementation's dependencies.
+    
+    /// @notice The address cache for the implementation's dependencies.
     mapping(bytes32 => address) addressCache;
+    
+    /// @notice The Unix timestamp at which the implementation was initialized.
+    /// @dev The initialize() function is essentially a reimplementation of the constructor() mechanism,
+    /// for delegatecall proxies.
+    uint256 initializedAt;
 }
 
 contract ProxyStorage {

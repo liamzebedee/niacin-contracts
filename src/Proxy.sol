@@ -3,11 +3,11 @@ pragma solidity ^0.8.13;
 
 import {Create2} from "./lib/Create2.sol";
 import {ProxyStorage, ImplStorage} from "./ProxyStorage.sol"; 
+import {MixinInitializable} from "./mixins/MixinInitializable.sol";
 
-// An implementation of a proxy.
-// The proxy forwards all calls to the implementation.
-// The proxy has an admin.
-
+/// @notice An implementation of a proxy.
+/// The proxy forwards all calls to the implementation.
+/// The proxy has an admin.
 contract Proxy is 
     ProxyStorage,
     ImplStorage
@@ -26,27 +26,20 @@ contract Proxy is
     }
 
     constructor(address _addressProvider) {
-        // Proxy storage.
+        /// @dev Proxy storage.
         _setAdmin(msg.sender);
         _proxyStore().implementation = address(0);
         _proxyStore().version = 0;
-        // Impl storage.
+        /// @dev Impl storage.
         _implStore().addressProvider = _addressProvider;
+        _implStore().proxy = address(this);
     }
 
     /* ========== VIEWS ========== */
 
-    // function getAdmin() public view returns (address) {
-    //     return _store().admin;
-    // }
-
     function getImplementation() public view returns (address) {
         return _proxyStore().implementation;
     }
-
-    // function getImplementationVersion() public view returns (uint32) {
-    //     return _store().version;
-    // }
 
     function _computeNewDeploymentSalt(uint32 version) public view returns (bytes32) {
         return keccak256(abi.encodePacked(address(this), version));
@@ -65,7 +58,8 @@ contract Proxy is
 
     function upgradeImplementation(
         bytes memory _newImplementation,
-        uint32 version
+        uint32 version,
+        bool initialize
     ) 
         public 
         onlyAdmin
@@ -77,8 +71,15 @@ contract Proxy is
             _newImplementation
         );
 
+        // Initialize the new implementation.
+        if(initialize) {
+            MixinInitializable(instance).initialize();
+        }
+
+        // Update the proxy.
         _proxyStore().implementation = instance;
         _proxyStore().version = version;
+
         emit Upgraded(instance, version);
     }
 

@@ -5,32 +5,31 @@ pragma solidity ^0.8.9;
 import {AddressProvider} from "../AddressProvider.sol";
 import {ImplStorage} from "../ProxyStorage.sol";
 
+/// @notice A mixin which allows a contract to have one-off logic run on deployment, inside the initialize() function.
 abstract contract MixinInitializable is 
     ImplStorage
 {
     /* ========== MODIFIERS ========== */
 
-    // Contracts MUST NOT use constructors, as they don't work with the proxy ugprade architecture.
-    // Instead, write an initializer function that uses this modifier.
-    // ie. function initialize(...) public initializer {}
     modifier initializer() {
-        require(_implStore().addressProvider != address(0), "niacin: proxy is not configured");
+        // Return if contract has already been initialized.
+        if(0 < _implStore().initializedAt) return;
+
+        // Check only the proxy is calling this function.
         require(
-            msg.sender == _deployer(), 
-            "niacin: only deployer can (re)-initialize"
+            msg.sender == _implStore().proxy, 
+            "niacin: only proxy can initialize"
         );
+
+        _implStore().initializedAt = block.timestamp;
         _;
     }
 
-    /* ========== VIRTUAL FUNCTIONS ========== */
-
-    /* ========== PUBLIC FUNCTIONS ========== */
-
-    /* ========== VIEWS ========== */
-
-    /* ========== INTERNAL FUNCTIONS ========== */
-
-    function _deployer() internal view returns (address) {
-        return AddressProvider(_implStore().addressProvider).owner();
-    }
+    /// @notice An abstract "constructor" function to be implemented by the contract.
+    /// @dev This function is called by the proxy.
+    function initialize() 
+        external 
+        virtual 
+        initializer
+    {}
 }
